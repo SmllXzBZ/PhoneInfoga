@@ -16,7 +16,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.1.0
+        uses: actions/setup-node@v3.4.0
         with:
           node-version: 15.11.x
 
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.2.0
         with:
-          go-version: 1.16.x
+          go-version: 1.17.8
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.8.0

@@ -16,7 +16,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.2.0
         with:
-          go-version: 1.16.x
+          go-version: 1.17.8
         id: go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3.0.0
@@ -26,22 +26,32 @@ jobs:
           go get -v -t -d ./...
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.1.0
+        uses: actions/setup-node@v3.4.0
         with:
           node-version: 15.11.x
 
       - name: Building static assets
         run: (cd client && yarn install --immutable && yarn build)
 
-      - name: Build
+      - name: Enforce Go formatted code
         run: |
-          go generate ./...
-          go build -v .
+          make fmt
+          if [[ -z $(git status --porcelain) ]]; then
+            echo "Git directory is clean."
+          else
+            echo "Git directory is dirty. Run make fmt locally and commit any formatting fixes or generated code."
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Install tools
+        run: make install-tools
+
+      - name: Build
+        run: make build
 
       - name: Lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.43.0
-          ./bin/golangci-lint run -D errcheck
+        run: make lint
 
       - name: Test
         run: go test -race -coverprofile=./c.out -covermode=atomic -v ./...
